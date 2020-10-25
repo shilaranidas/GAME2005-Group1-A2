@@ -5,7 +5,7 @@
 
 Target::Target()
 {
-	TextureManager::Instance()->load("../Assets/textures/megaman-grenade-0.png","circle");
+	TextureManager::Instance()->load("../Assets/textures/ball.png","circle");
 
 	const auto size = TextureManager::Instance()->getTextureSize("circle");
 	setWidth(size.x);

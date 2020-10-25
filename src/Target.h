@@ -33,6 +33,8 @@ public:
 	float m_Atime = 0.016667f; // accumulated time  (1/60)
 	glm::vec2 m_acceleration = glm::vec2(0.0f, 0.0f);
 	glm::vec2 m_finalPosition = glm::vec2(0.0f, 0.0f);
+	float m_mass = 10.0f;
+
 	bool buttonPressed = false;
 
 private:

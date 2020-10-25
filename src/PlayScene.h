@@ -34,9 +34,9 @@ private:
 	
 	glm::vec2 m_mousePosition;
 
-	Plane* m_pPlaneSprite;
-	Player* m_pPlayer;
-	Target* m_pBall;
+	//Plane* m_pPlaneSprite;
+	//Player* m_pPlayer;
+	Target* m_pLoot;
 	Ship* m_pStormtrooper;
 	bool m_playerFacingRight;
 
@@ -50,11 +50,11 @@ private:
 	Label* m_pInstructionsLabel;
 	//mass, position, velocity, acceleration
 	Label* m_pMass;
-	Label* m_pDist;
+	Label* m_pRise;
 	Label* m_pVel;
 	Label* m_pAng;
 	Label* m_pHeight;
-	Label* m_pTime;
+	Label* m_pRun;
 	int fl = 510.0f;
 
 
@@ -63,15 +63,16 @@ private:
 	bool* m_isGravityEnabledPtr = &m_isGravityEnabled;
 	
 
-	float m_PPM = 1.0f; // pixels per meter - scale
-
+	float m_PPM = 5.0f; // pixels per meter - scale
+	float m_friction = 0.0f;
 
 	bool m_distanceGiv = false;
 	bool* m_distanceGiven = &m_distanceGiv;
 	int m_distance = 485;
 	float m_height = 0.0f;
 	
-
+	int rampWidthMeter = 4;
+	int rampHeightMeter = 3;
 	bool m_velocityGiv = false;
 	bool* m_velocityGiven = &m_velocityGiv;
 	
