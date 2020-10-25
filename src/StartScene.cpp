@@ -68,7 +68,6 @@ void StartScene::start()
 	m_pTeamLabel1->setParent(this);
 	addChild(m_pTeamLabel1);
 	
-
 	// Start Button
 	m_pStartButton = new Button();
 	m_pStartButton->getTransform()->position = glm::vec2(400.0f, 400.0f); 
