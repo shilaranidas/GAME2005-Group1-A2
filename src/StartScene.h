@@ -24,7 +24,7 @@ private:
 	Label* m_pStartLabel{};
 	Label* m_pInstructionsLabel{};
 	Label* m_pTeamLabel1{}; 
-	Label* m_pTeamLabel2{};
+	
 
 	
 

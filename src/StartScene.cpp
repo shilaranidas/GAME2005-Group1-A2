@@ -67,10 +67,7 @@ void StartScene::start()
 	m_pTeamLabel1 = new Label("Shila Rani Das-101141958", "Consolas", 25, black, glm::vec2(400.0f, 200.0f));
 	m_pTeamLabel1->setParent(this);
 	addChild(m_pTeamLabel1);
-	m_pTeamLabel2 = new Label("Cody Edwards-101216940", "Consolas", 25, black, glm::vec2(400.0f, 230.0f));
-	m_pTeamLabel2->setParent(this);
-	addChild(m_pTeamLabel2);
-
+	
 
 	// Start Button
 	m_pStartButton = new Button();
