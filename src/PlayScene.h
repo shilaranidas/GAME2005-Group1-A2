@@ -23,8 +23,8 @@ public:
 	virtual void handleEvents() override;
 	virtual void start() override;
 	void changeLabel();
-	void angleVelKnown();
-	void distanceVelKnown();
+	
+	void Calculation();
 	void reset();
 	
 private:
@@ -52,29 +52,30 @@ private:
 	Label* m_pMass;
 	Label* m_pRise;
 	Label* m_pVel;
+	Label* m_pAcce;
 	Label* m_pAng;
-	Label* m_pHeight;
+	Label* m_pForce;
 	Label* m_pRun;
+	Label* m_pFriction;
 	int fl = 510.0f;
 
 
 	// Physics Variables
-	bool m_isGravityEnabled = false;
-	bool* m_isGravityEnabledPtr = &m_isGravityEnabled;
+	bool m_isFrictionSurface = false;
+	bool* m_isFrictionSurfacePtr = &m_isFrictionSurface;
 	
 
 	float m_PPM = 5.0f; // pixels per meter - scale
 	float m_friction = 0.0f;
 
-	bool m_distanceGiv = false;
-	bool* m_distanceGiven = &m_distanceGiv;
+
 	int m_distance = 485;
-	float m_height = 0.0f;
+	//float m_Force = 0.0f;
+	
 	
 	int rampWidthMeter = 4;
 	int rampHeightMeter = 3;
-	bool m_velocityGiv = false;
-	bool* m_velocityGiven = &m_velocityGiv;
+	
 	
 
 
@@ -83,13 +84,10 @@ private:
 	
 
 
-	bool m_angleGiv = false;
-	bool* m_angleGiven = &m_angleGiv;
-	
 
 
-	bool m_timeGiv = false;
-	bool* m_timeGiven = &m_timeGiv;
+
+
 	float m_totalTime=0.0f;
 };
 

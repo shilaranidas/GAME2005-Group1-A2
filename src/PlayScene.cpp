@@ -1,4 +1,4 @@
-#include "PlayScene.h"
+﻿#include "PlayScene.h"
 #include "Game.h"
 #include "EventManager.h"
 
@@ -119,10 +119,13 @@ void PlayScene::handleEvents()
 	}
 }
 void PlayScene::reset() {
-	m_isGravityEnabled = false;
+	m_isFrictionSurface = false;
 	//m_pStormtrooper->getTransform()->position = glm::vec2(585.0f, fl);
 	m_pLoot->m_gravity = 9.8f;
 	m_PPM = 1.0f;
+	rampHeightMeter = 150;
+	rampWidthMeter = 150;
+	m_pLoot->m_mass = 12.5f;
 	m_pLoot->m_PPM = 1.0f;
 	m_pLoot->m_Atime = 0.016667f;
 	m_pLoot->m_angle = 0.0f;
@@ -133,13 +136,7 @@ void PlayScene::reset() {
 	m_pLoot->throwSpeed = glm::vec2(0.0f, 0.0f);
 	m_pLoot->buttonPressed = false;
 	m_pLoot->isGravityEnabled = false;
-	m_angleGiv = false;
-	m_velocityGiv = false;
-	m_distanceGiv = false;
-	m_timeGiv = false;
-	//m_velocityGiven = false;
-	//m_angleGiven = false;
-	//m_pBall->getTransform()->position = m_pPlayer->getTransform()->position + glm::vec2(20.0f, 0.0f);
+	
 }
 void PlayScene::start()
 {
@@ -151,14 +148,7 @@ void PlayScene::start()
 	m_pLoot = new Target();
 	addChild(m_pLoot);
 
-	//// Ball Sprite
-	/*m_pStormtrooper = new Ship();
-	addChild(m_pStormtrooper);*/
-
-	// Player Sprite
-	/*m_pPlayer = new Player();
-	addChild(m_pPlayer);
-	m_playerFacingRight = true;*/
+	
 
 	// Back Button
 	m_pBackButton = new Button("../Assets/textures/backButton.png", "backButton", BACK_BUTTON);
@@ -225,9 +215,15 @@ void PlayScene::start()
 	m_pRun = new Label("Ramp Run: 4m", "Consolas", 20, white);
 	m_pRun->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.85f, 90.0f);
 	addChild(m_pRun);
-	m_pHeight = new Label("Height: 50m", "Consolas", 20, white);
-	m_pHeight->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.85f,110.0f);
-	addChild(m_pHeight);
+	m_pForce = new Label("Force: 50N", "Consolas", 20, white);
+	m_pForce->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.85f,110.0f);
+	addChild(m_pForce);
+	m_pFriction = new Label("Coefficient of friction: 0.42", "Consolas", 20, white);
+	m_pFriction->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.75f, 130.0f);
+	addChild(m_pFriction);
+	m_pAcce = new Label("Acceleration: 3m/s^2", "Consolas", 20, white);
+	m_pAcce->getTransform()->position = glm::vec2(Config::SCREEN_WIDTH * 0.8f, 150.0f);
+	addChild(m_pAcce);
 	reset();
 
 }
@@ -241,43 +237,42 @@ void PlayScene::changeLabel() {
 	//text = "distance: " + std::to_string(m_pStormtrooper->getTransform()->position.x- m_pBall->getTransform()->position.x) + " m";//Angle: 45degree
 	text = "Rise: " + std::to_string(rampHeightMeter) + " m";
 	m_pRise->setText(text);
-	text = "height: " + std::to_string(m_height) + " m";
-	m_pHeight->setText(text);
-	text = "Run: " + std::to_string(rampWidthMeter) + " m";//Angle: 45degree
+	text = "Force: " + std::to_string(m_pLoot->m_pF) + " N";
+	m_pForce->setText(text);
+	text = "Run: " + std::to_string(rampWidthMeter) + " m";
 	m_pRun->setText(text);
+	text = "Coefficient of friction: " + std::to_string(m_friction) ;//Angle: 45degree
+	m_pFriction->setText(text);
+	std::cout << "labl" <<  m_pLoot->m_accelerationVal << std::endl;
+	text = "Acceleration: " + std::to_string(m_pLoot->m_accelerationVal);//Angle: 45degree
+	m_pAcce->setText(text);
 }
-void PlayScene::distanceVelKnown() {
-
-	m_pLoot->m_angle = Util::Rad2Deg *0.5f *asin(m_pLoot->m_gravity*m_distance*m_PPM/((m_pLoot->m_velocity * m_PPM)* (m_pLoot->m_velocity * m_PPM)));
-	//m_pBall->throwPosition = glm::vec2(m_pPlayer->getTransform()->position.x + 20.0f, m_pPlayer->getTransform()->position.y);
-	// velocity components
+void PlayScene::Calculation() {
+	m_pLoot->m_angle = Util::Rad2Deg * atan((rampHeightMeter * m_PPM) / (rampWidthMeter * m_PPM));
+	if (!m_isFrictionSurface)
+	{
+		//force at time 0
+		m_pLoot->m_pF = m_pLoot->m_mass * m_pLoot->m_gravity * sin(Util::Deg2Rad * m_pLoot->m_angle);
+	}
+	else
+	{
+		m_pLoot->m_pF = m_pLoot->m_mass * m_pLoot->m_gravity * m_friction;
+	}
+	m_pLoot->m_accelerationVal = m_pLoot->m_pF/m_pLoot->m_mass;
+	//intitial velocity components//v_i=√2gh
+	m_pLoot->m_velocity = sqrt(2* m_pLoot->m_gravity*rampHeightMeter);
 	m_pLoot->m_velocityX = (m_pLoot->m_velocity * m_PPM) * cos(m_pLoot->m_angle * Util::Deg2Rad);
-	m_pLoot->m_velocityY = (m_pLoot->m_velocity * m_PPM) * -sin(m_pLoot->m_angle * Util::Deg2Rad);
-	// final velocity vector
+	m_pLoot->m_velocityY = (m_pLoot->m_velocity * m_PPM) * sin(m_pLoot->m_angle * Util::Deg2Rad);
+	// initial velocity vector
+	//std::cout << "st" << m_pLoot->m_velocityX << "," << m_pLoot->m_velocityY << std::endl;
 	glm::vec2 velocity_vector = glm::vec2(m_pLoot->m_velocityX, m_pLoot->m_velocityY);
-
+	m_pLoot->m_acceleration = glm::vec2(m_pLoot->m_accelerationVal * cos(m_pLoot->m_angle * Util::Deg2Rad) * m_PPM,
+		m_pLoot->m_accelerationVal  * sin(m_pLoot->m_angle * Util::Deg2Rad) * m_PPM);
+	std::cout << "a" << m_pLoot->m_acceleration.x << "," << m_pLoot->m_acceleration.y << ", " << m_pLoot->m_accelerationVal << std::endl;
 	m_pLoot->throwSpeed = velocity_vector;
-	//m_distance = (m_pBall->m_velocity * m_PPM) * (m_pBall->m_velocity * m_PPM) * sin(2 * m_pBall->m_angle * Util::Deg2Rad) / m_pBall->m_gravity;
-	m_height= (m_pLoot->m_velocity * m_PPM) * (m_pLoot->m_velocity * m_PPM) * sin( m_pLoot->m_angle * Util::Deg2Rad)* sin(m_pLoot->m_angle * Util::Deg2Rad) /(2* m_pLoot->m_gravity);
-	m_totalTime = (m_pLoot->m_velocity * m_PPM) * sin(m_pLoot->m_angle * Util::Deg2Rad) / m_pLoot->m_gravity;
-	//set stormtrooper
-	//m_pStormtrooper->getTransform()->position = glm::vec2(m_distance * m_PPM, fl);
+	
 }
-void PlayScene::angleVelKnown() {
-	//m_pBall->throwPosition = glm::vec2(m_pPlayer->getTransform()->position.x + 20.0f, m_pPlayer->getTransform()->position.y);
-	// velocity components
-	m_pLoot->m_velocityX = (m_pLoot->m_velocity * m_PPM) * cos(m_pLoot->m_angle * Util::Deg2Rad);
-	m_pLoot->m_velocityY = (m_pLoot->m_velocity * m_PPM) * -sin(m_pLoot->m_angle * Util::Deg2Rad);
-	// final velocity vector
-	glm::vec2 velocity_vector = glm::vec2(m_pLoot->m_velocityX, m_pLoot->m_velocityY);
 
-	m_pLoot->throwSpeed = velocity_vector;
-	m_distance = (m_pLoot->m_velocity * m_PPM) * (m_pLoot->m_velocity * m_PPM) * sin(2 * m_pLoot->m_angle * Util::Deg2Rad) / m_pLoot->m_gravity;
-	m_height = (m_pLoot->m_velocity * m_PPM) * (m_pLoot->m_velocity * m_PPM) * sin(m_pLoot->m_angle * Util::Deg2Rad) * sin(m_pLoot->m_angle * Util::Deg2Rad) / (2 * m_pLoot->m_gravity);
-	m_totalTime = (m_pLoot->m_velocity * m_PPM) * sin(m_pLoot->m_angle * Util::Deg2Rad) / m_pLoot->m_gravity;
-	//set stormtrooper
-	//m_pStormtrooper->getTransform()->position = glm::vec2(m_distance * m_PPM+ m_pPlayer->getTransform()->position.x, fl) ;
-}
 void PlayScene::GUI_Function() 
 {
 	// Always open with a NewFrame
@@ -293,8 +288,7 @@ void PlayScene::GUI_Function()
 	bool buttonPressed = ImGui::Button("Start Simulation");
 	if (buttonPressed)
 	{
-		//m_pBall->getTransform()->position = glm::vec2(m_pPlayer->getTransform()->position.x + 40.0f, fl);
-		//m_pBall->throwPosition = glm::vec2(m_pPlayer->getTransform()->position.x + 40.0f, fl);
+		
 		m_pLoot->doThrow();
 	}
 	ImGui::SameLine();
@@ -304,21 +298,10 @@ void PlayScene::GUI_Function()
 	}
 	ImGui::Separator();
 	
-	//ImGui::Checkbox("Gravity", m_isGravityEnabledPtr);
-	////if ((*m_isGravityEnabledPtr))
-	//	//std::cout << "T" << std::endl;
-	//	m_pBall->isGravityEnabled = *m_isGravityEnabledPtr;
-	////else
-	//	//std::cout << "F" << std::endl;
+	
 	ImGui::Separator();
 	static int xPlayerPos = 150;
-	//if (ImGui::SliderInt("Player x position", &xPlayerPos, 0, Config::SCREEN_WIDTH))
-	//{
-	//	//m_pPlayer->getTransform()->position = glm::vec2(xPlayerPos, fl);
-	//	m_pBall->getTransform()->position= glm::vec2(xPlayerPos + 40.0f, fl);
-	//	m_pBall->throwPosition = glm::vec2(xPlayerPos + 40.0f, fl);
-	//	
-	//}
+	
 	if (ImGui::SliderFloat("Pixels Per Meter", &m_PPM, 0.1f, 30.0f, "%.1f"))
 	{
 		m_pLoot->m_PPM = m_PPM;
@@ -326,114 +309,34 @@ void PlayScene::GUI_Function()
 	if (ImGui::SliderFloat("Mass of crate (Kg)", &m_pLoot->m_mass, 0.1f, 30.0f, "%.1f"));
 	if (ImGui::SliderFloat("force of friction", &m_friction, 0.03f, 1.0f, "%.3f"));
 	
-	 
+	
 	
 	glm::vec2 point = glm::vec2(150, 400);
 	if (ImGui::SliderInt("Ramp Width(m)", &rampWidthMeter, 0, (Config::SCREEN_WIDTH - 200)/m_PPM));
 	
 	if (ImGui::SliderInt("Ramp Height(m)", &rampHeightMeter, 0, (Config::SCREEN_HEIGHT - 250)/m_PPM));
-	//static int rampWidth = rampWidthMeter * m_PPM;
-	//static int rampHeight = rampHeightMeter * m_PPM;
+	
 
 	Util::DrawLine(point, glm::vec2(point.x, point.y - rampHeightMeter * m_PPM), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
 	Util::DrawLine(point, glm::vec2(point.x + rampWidthMeter * m_PPM, point.y), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
 	Util::DrawLine(glm::vec2(point.x + rampWidthMeter * m_PPM, point.y), glm::vec2(point.x, point.y - rampHeightMeter * m_PPM), glm::vec4(0.0f, 1.0f, 0.0f, 0.0f));
 	m_pLoot->getTransform()->position = glm::vec2(point.x,point.y - rampHeightMeter * m_PPM -20);//glm::vec2(xPlayerPos + 40.0f, fl);
+	Calculation();
 	changeLabel();
-	//ImGui::Separator();
-	// 
-	//if (ImGui::Checkbox("Kicking angle", m_angleGiven))
-	//{
-	//	m_pBall->m_angleGiv = m_angleGiven;
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::SliderFloat(" degree", &m_pBall->m_angle, 0.0f, 90.0f, "%.1f"))
-	//{
-	//	if (m_angleGiven && m_velocityGiven)
-	//	{
-	//		//// velocity components
-	//		//m_pBall->m_velocityX = (m_pBall->m_velocity * m_PPM) * cos(m_pBall->m_angle * Util::Deg2Rad);
-	//		//m_pBall->m_velocityY = (m_pBall->m_velocity * m_PPM) * -sin(m_pBall->m_angle * Util::Deg2Rad);
-	//		//// final velocity vector
-	//		//glm::vec2 velocity_vector = glm::vec2(m_pBall->m_velocityX, m_pBall->m_velocityY);
-
-	//		//m_pBall->throwSpeed = velocity_vector;
-	//		angleVelKnown();
-	//		changeLabel();
-	//	}
-	//}
-	//if (ImGui::Checkbox("velocity", m_velocityGiven))
-	//{
-	//	m_pBall->m_velocityGiv = m_velocityGiven;
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::SliderFloat("m/s", &m_pBall->m_velocity, 0.0f, 200.0f, "%.1f"))
-	//{
-	//	if(m_angleGiven && m_velocityGiven)
-	//		{
-	//			
-	//			angleVelKnown();
-	//			changeLabel();
-	//		}
-
-	//	//m_pBall->throwSpeed = glm::vec2(50.0f, -50.0f);
-	//}
-	//if (ImGui::Checkbox("Stormtrooper Distance", m_distanceGiven))
-	//{
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::SliderInt("m", &m_distance, 1, 1400))
-	//{
-	//	//distance in meter need to transfer to pixel
-	//	if (m_distanceGiven)
-	//	{
-	//		m_pStormtrooper->getTransform()->position = glm::vec2(m_distance * m_PPM + m_pPlayer->getTransform()->position.x, fl);
-	//		if (m_distanceGiven && m_velocityGiven)
-	//		{
-	//			distanceVelKnown();
-	//			changeLabel();
-	//		}
-	//	}
-	//}
-
-	//if (ImGui::Checkbox("Total time", m_timeGiven))
-	//{
-	//}
-	//ImGui::SameLine();
-	//if (ImGui::SliderFloat("sec", &m_totalTime, 0.0f, 20.0f, "%.1f"))
-	//{
-
-	//}
-	//static float throwSpeed[2] = { 0,0 };
-	//static float xThrowSpeed = 0.0f;
-	/*if (ImGui::InputFloat("Throw Speed x", &xThrowSpeed)) {
-		m_pBall->throwSpeed.x = xThrowSpeed;
-	}*/	
-	//static float yThrowSpeed = 0.0f;
-	/*if (ImGui::InputFloat("Throw Speed y", &yThrowSpeed)) {
-		m_pBall->throwSpeed.y = yThrowSpeed;
-	}*/
-	/*if(ImGui::SliderFloat2("Throw Speed", throwSpeed, -100.0f, 100.0f))
-	{
-		m_pBall->throwSpeed = glm::vec2(throwSpeed[0], throwSpeed[1]);
-	}*/
-	/*if (ImGui::InputFloat2("ThrowSpeed", velocity)) {
-		m_pBall->throwSpeed = glm::vec2(velocity[0], velocity[1]);
-	}*/
-	//static float float3[3] = { 0.0f, 1.0f, 1.5f };
-	/*if(ImGui::SliderFloat3("My Slider", float3, 0.0f, 2.0f))
-	{
-		std::cout << float3[0] << std::endl;
-		std::cout << float3[1] << std::endl;
-		std::cout << float3[2] << std::endl;
-		std::cout << "---------------------------\n";
-	}*/
-	/*static float throwSpeed = 0.0f;
-	if (ImGui::SliderFloat("Throw velocity in m/s", &throwSpeed, -100.0f, 100.0f))
-	{
-		if(*m_angleGiven && *m_velocityGiven)
-			m_pBall->throwSpeed = glm::vec2( glm::sthrowSpeed[0], throwSpeed[1]);
-	}*/
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	ImGui::End();
 
 	// Don't Remove this
